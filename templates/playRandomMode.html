@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}testName - Случайный Режим{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #252d3a 0%, #1a202c 100%);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        position: relative;
+        min-height: calc(100vh - 200px);
+    }
+
+    .player {
+        width: 49%;
+        height: 75%;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 7.5%;
+        left: 0.5%;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    #map1 {
+        visibility: visible;
+        border-radius: 15px;
+        overflow: hidden;
+        width: 49%;
+        height: 75%;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 7.5%;
+        left: 99.5%;
+        transform: translate(-100%, 0%);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    #map2 {
+        visibility: hidden;
+        border-radius: 15px;
+        overflow: hidden;
+        width: 99%;
+        height: 75%;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    #distance-text {
+        text-align: center;
+        position: absolute;
+        top: 3.5%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #e2e8f0;
+        white-space: nowrap;
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    #myPanorama {
+        visibility: visible;
+    }
+
+    #myButton1 {
+        visibility: hidden;
+    }
+
+    #myButton2 {
+        visibility: hidden;
+    }
+
+    .func-btn {
+        align-items: center;
+        background: linear-gradient(135deg, #6bc4c7 0%, #84f1e0 100%);
+        color: #252d3a;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(107, 196, 199, 0.3);
+        text-decoration: none;
+        display: inline-flex;
+        justify-content: center;
+        line-height: 1.25;
+    }
+      
+    .func-btn:hover,
+    .func-btn:focus {
+        box-shadow: 0 8px 25px rgba(107, 196, 199, 0.5);
+        background: linear-gradient(135deg, #5bb4b7 0%, #73e1d0 100%);
+    }
+      
+    .func-btn:active {
+        background: #519496;
+    }
+    
+    .answer-btn {
+        position: absolute;
+        top: 92.5%;
+        left: 50%;
+        text-decoration: none;
+        display: inline-block;
+        height: 10%;
+        width: 99%;
+        font-size: 1.5rem;
+        border-radius: 15px;
+        border: 2px solid rgba(91, 85, 157, 0.3);
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(107, 196, 199, 0.9);
+        white-space: nowrap;
+        transition: all 0.3s ease;
+    }
+
+    .answer-btn:hover {
+        box-shadow: 0 8px 25px rgba(107, 196, 199, 0.5);
+        background: rgba(107, 196, 199, 1);
+    }
+
+    @media (max-width: 768px) {
+        .player, #map1 {
+            width: 95%;
+            height: 45%;
+            left: 2.5%;
+        }
+        
+        #map1 {
+            top: 45%;
+        }
+        
+        .player {
+            top: 5%;
+        }
+        
+        .answer-btn {
+            top: 88%;
+            height: 8%;
+            font-size: 1.3rem;
+        }
+        
+        #map2 {
+            width: 95%;
+            height: 60%;
+            top: 40%;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <p id="distance-text">Изучите панораму слева и отметьте точку на карте справа. Постарайтесь угадать максимально точно!</p>
+
+    <a style="text-decoration:none" type="button" class="answer-btn func-btn" onclick="hidePanMap()" id="myButton1">Ответить</a>
+    <a style="text-decoration:none" type="button submit" class="answer-btn func-btn" id="myButton2" href='/playRandomMode'>Попробовать снова</a>
+    <div id="myPanorama" class="player"></div>
+    <div id="map1"></div>
+    <div id="map2"></div>
+</div>
+
+<div id="gameData" data-coordinates='{{ data | tojson }}' style="display: none;"></div>
+
+
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ yandex_api_key }}"></script>
+
+<script>
+    // СКРИПТ ПАНОРАМЫ НАЧАЛО
+    var myPanorama;
+    
+    function getGameData() {
+        var gameDataElement = document.getElementById('gameData');
+        var coordinates = gameDataElement.getAttribute('data-coordinates');
+        return JSON.parse(coordinates);
+    }
+    
+    var gameAns = getGameData();
+
+    ymaps.ready(function () {
+        if (!ymaps.panorama.isSupported()) {
+            console.log("Browser doesn't support panorama");
+            return
+        }
+        ymaps.panorama.locate(gameAns).done(
+            function (panoramas) {
+                if (panoramas.length > 0) {
+                    var player = new ymaps.panorama.Player(
+                            'myPanorama',
+                            panoramas[0],
+                            { direction: [315, 12], controls: ['zoomControl'] }
+                        );
+                } else {
+                    location.reload()
+                }
+            },
+            function (error) {
+                alert(error.message);
+            }
+        );
+    });
+    // СКРИПТ ПАНОРАМЫ КОНЕЦ
+
+    // СКРИПТ ПЕРВОЙ И ВТОРОЙ КАРТЫ НАЧАЛО
+    var myMap1;
+    var myMap2;
+    var userAns;
+    var UserAnsD = {};
+    var x3 = 55.753994;
+    var y3 = 37.622093;
+    var newCenter = [x3, y3];
+    var newZoom = 20;
+
+    ymaps.ready(init);
+
+    function init() {
+        var myPlacemark1,
+            myMap1 = new ymaps.Map('map1', {
+                center: [55.753994, 37.622093],
+                zoom: 9,
+                controls: ['zoomControl']
+            }, {
+                searchControlProvider: 'yandex#search',
+                yandexMapDisablePoiInteractivity: true
+            });
+        var myPlacemark2,
+            myMap2 = new ymaps.Map('map2', {
+                center: [55.753994, 37.622093],
+                zoom: 9,
+                controls: ['zoomControl']
+            }, {
+                searchControlProvider: 'yandex#search',
+                yandexMapDisablePoiInteractivity: true
+            });
+
+            myGeoObject = new ymaps.GeoObject({
+                geometry: {
+                    type: "Point",
+                    coordinates: [55.8, 37.8]
+                },
+                properties: {}
+            });
+        
+        myMap2.geoObjects
+            .add(new ymaps.Placemark(gameAns, {}, {
+                preset: 'islands#governmentCircleIcon',
+                iconColor: '#3b5998'
+            }));
+
+        myMap1.events.add('click', function (e) {
+            var coords = e.get('coords');
+            var userAns = coords;
+
+            if (myPlacemark1) {
+                myPlacemark1.geometry.setCoordinates(coords);
+                myPlacemark2.geometry.setCoordinates(userAns);
+
+                UserAnsD.ans = userAns;
+
+                myMap2.geoObjects.remove(ansLine);
+                ansLine = new ymaps.Polyline([gameAns, userAns], {}, {strokeColor: "#3828eb", strokeWidth: 4});
+                myMap2.geoObjects.add(ansLine);
+
+                if (gameAns[0] >= userAns[0]) {
+                    x3 = userAns[0] + ((gameAns[0] - userAns[0]) / 2)
+                }
+                else if (gameAns[0] < userAns[0]) {
+                    x3 = gameAns[0] + ((userAns[0] - gameAns[0]) / 2)
+                }
+                if (gameAns[1] >= userAns[1]) {
+                    y3 = userAns[1] + ((gameAns[1] - userAns[1]) / 2)
+                }
+                else if (gameAns[1] < userAns[1]) {
+                    y3 = gameAns[1] + ((userAns[1] - gameAns[1]) / 2)
+                }
+                newCenter[0] = x3;
+                newCenter[1] = y3;
+                myMap2.setCenter(newCenter, newZoom, {duration: 300});
+                myMap2.setBounds(myMap2.geoObjects.getBounds(),{checkZoomRange:true, zoomMargin:9});
+            }
+            else {
+                myPlacemark1 = new ymaps.Placemark(coords)
+                myPlacemark2 = new ymaps.Placemark(userAns)
+                myMap1.geoObjects.add(myPlacemark1);
+                myMap2.geoObjects.add(myPlacemark2);
+                ansLine = new ymaps.Polyline([gameAns, userAns], {}, {strokeColor: "#3828eb", strokeWidth: 4});
+                myMap2.geoObjects.add(ansLine);
+
+                UserAnsD.ans = userAns;
+                const myButton1 = document.getElementById('myButton1');
+                myButton1.style.visibility = 'visible';
+
+                if (gameAns[0] >= userAns[0]) {
+                    x3 = userAns[0] + ((gameAns[0] - userAns[0]) / 2)
+                }
+                else if (gameAns[0] < userAns[0]) {
+                    x3 = gameAns[0] + ((userAns[0] - gameAns[0]) / 2)
+                }
+                if (gameAns[1] >= userAns[1]) {
+                    y3 = userAns[1] + ((gameAns[1] - userAns[1]) / 2)
+                }
+                else if (gameAns[1] < userAns[1]) {
+                    y3 = gameAns[1] + ((userAns[1] - gameAns[1]) / 2)
+                }
+                newCenter[0] = x3;
+                newCenter[1] = y3;
+                myMap2.setCenter(newCenter, newZoom, {duration: 300});
+                myMap2.setBounds(myMap2.geoObjects.getBounds(),{checkZoomRange:true, zoomMargin:9});
+            }
+        });
+    };
+    // СКРИПТ ПЕРВОЙ И ВТОРОЙ КАРТЫ КОНЕЦ
+
+    // СКРИПТ ПРЯЧУЩИЙ ПАНОРАМУ И ПЕРВУЮ КАРТУ И ПИШУЩИЙ РАССТОЯНИЕ НА КОТОРОЕ ОШИБСЯ ПОЛЬЗОВАТЕЛЬ НАЧАЛО
+    function hidePanMap() {
+        const hideMap1 = document.getElementById('map1');
+        hideMap1.style.visibility = 'hidden';
+
+        const hideMyPanorama = document.getElementById('myPanorama');
+        hideMyPanorama.style.visibility = 'hidden';
+
+        const showMap2 = document.getElementById('map2');
+        showMap2.style.visibility = 'visible';
+
+        const myButton1 = document.getElementById('myButton1');
+        myButton1.style.visibility = 'hidden';
+
+        const myButton2 = document.getElementById('myButton2');
+        myButton2.style.visibility = 'visible';
+
+        if ((ymaps.coordSystem.geo.getDistance(gameAns, UserAnsD.ans)) > 1000) {
+            console.log('You are ' + (Math.round((ymaps.coordSystem.geo.getDistance(gameAns, UserAnsD.ans)) / 1000)) + ' kilometers wrong. Try again.');
+
+            const distanceText = document.getElementById('distance-text');
+            distanceText.textContent = ('Вы ошиблись на ' + (Math.round((ymaps.coordSystem.geo.getDistance(gameAns, UserAnsD.ans)) / 1000)) + ' километров. Попробуйте еще раз!');
+            distanceText.style.fontSize = "1.5rem";
+            distanceText.style.whiteSpace = "nowrap";
+        }
+        else {
+            console.log('You are ' + (Math.round(ymaps.coordSystem.geo.getDistance(gameAns, UserAnsD.ans))) + ' metres wrong. Good job!');
+
+            const distanceText = document.getElementById('distance-text');
+            distanceText.textContent = ('Вы ошиблись на ' + (Math.round(ymaps.coordSystem.geo.getDistance(gameAns, UserAnsD.ans))) + ' метров. Отличная работа!');
+            distanceText.style.fontSize = "1.5rem";
+            distanceText.style.whiteSpace = "nowrap";
+        }
+    }
+    // СКРИПТ ПРЯЧУЩИЙ ПАНОРАМУ И ПЕРВУЮ КАРТУ И ПИШУЩИЙ РАССТОЯНИЕ НА КОТОРОЕ ОШИБСЯ ПОЛЬЗОВАТЕЛЬ КОНЕЦ
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}testName - Исследуй Мир{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="/" class="logo">testName</a>
+                <div class="nav-links">
+                    {% if current_user.is_authenticated %}
+                        <a href="/account" class="user-name">{{ current_user.name }}</a>
+                        
+                    {% else %}
+                        <a href="/login" class="nav-btn">Войти</a>
+                        <a href="/register" class="nav-btn">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">testName</div>
+                <div class="social-links">
+                    <a href="https://discordapp.com/users/698528003801481216" target="_blank" class="social-link">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="https://t.me/zamaznik" target="_blank" class="social-link">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="https://github.com/DuxaDruha" target="_blank" class="social-link">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+                <div class="contact-info">
+                    <p>Свяжитесь со мной:</p>
+                    <a href="https://discordapp.com/users/698528003801481216" target="_blank" class="contact-link">Discord: dristat</a>
+                    <a href="https://t.me/zamaznik" target="_blank" class="contact-link">Telegram: @zamaznik</a>
+                    <a href="https://github.com/DuxaDruha" target="_blank" class="contact-link">GitHub: DuxaDruha</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

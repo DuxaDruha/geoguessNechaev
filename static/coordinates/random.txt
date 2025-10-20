@@ -1,0 +1,2 @@
+55.692711, 37.544543 - bottom left Moscow point
+55.868057, 37.718527 - top right Moscow point

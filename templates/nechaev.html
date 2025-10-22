@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="text-align: center; padding: 2rem;">
+        <h1>nechaev.jpg</h1>
+        
+        <form id="uploadForm" enctype="multipart/form-data" style="margin: 2rem 0;">
+            <input type="file" id="imageInput" accept="image/*" required 
+                   style="display: none;">
+            <label for="imageInput" class="nav-btn" style="cursor: pointer; display: inline-block; margin: 0.5rem;">
+                <i class="fas fa-cloud-upload-alt"></i> Выбрать изображение
+            </label>
+            <br>
+            <button type="submit" class="nav-btn" style="margin: 0.5rem;">
+                <i class="fas fa-magic"></i> Обработать
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <img id="resultImage" style="max-width: 80%; max-height: 500px; border-radius: 5px; display: none; margin: 0 auto;">
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const file = document.getElementById('imageInput').files[0];
+    if (!file) {
+        alert('Пожалуйста, выберите изображение');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const resultImage = document.getElementById('resultImage');
+    const processBtn = document.querySelector('button[type="submit"]');
+    
+    // Показываем исходную картинку
+    resultImage.style.display = 'block';
+    resultImage.src = URL.createObjectURL(file);
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
+
+    try {
+        const response = await fetch('/process-nechaev', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultImage.src = data.image; // Заменяем на обработанную
+        } else {
+            alert('Ошибка: ' + data.error);
+            resultImage.style.display = 'none';
+        }
+    } catch (error) {
+        alert('Ошибка загрузки');
+        resultImage.style.display = 'none';
+    } finally {
+        processBtn.disabled = false;
+        processBtn.innerHTML = '<i class="fas fa-magic"></i> Обработать';
+    }
+});
+
+// Показываем имя выбранного файла
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const label = document.querySelector('label[for="imageInput"]');
+    if (this.files && this.files[0]) {
+        label.innerHTML = `<i class="fas fa-file-image"></i> ${this.files[0].name}`;
+    } else {
+        label.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Выбрать изображение';
+    }
+});
+</script>
+{% endblock %}

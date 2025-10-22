@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}testName - Исследуй Мир{% endblock %}</title>
+    <title>{% block title %}NechaevGuess - Исследуй Мир{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -12,15 +12,9 @@
     <header>
         <div class="container">
             <div class="navbar">
-                <a href="/" class="logo">testName</a>
+                <a href="/" class="logo">NechaevGuess</a>
                 <div class="nav-links">
-                    {% if current_user.is_authenticated %}
-                        <a href="/account" class="user-name">{{ current_user.name }}</a>
-                        
-                    {% else %}
-                        <a href="/login" class="nav-btn">Войти</a>
-                        <a href="/register" class="nav-btn">Регистрация</a>
-                    {% endif %}
+                    <a href="/nechaev" class="nav-btn">nechaev.jpg</a>
                 </div>
             </div>
         </div>
@@ -35,7 +29,7 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">testName</div>
+                <div class="footer-logo">NechaevGuess</div>
                 <div class="social-links">
                     <a href="https://discordapp.com/users/698528003801481216" target="_blank" class="social-link">
                         <i class="fab fa-discord"></i>

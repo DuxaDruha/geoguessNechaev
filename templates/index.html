@@ -5,16 +5,12 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">testName</h1>
+                <h1 class="hero-title">NechaevGuess</h1>
                 <p class="hero-description">
-                    С testName вы сможете путешествовать по миру, не выходя из дома! 
+                    С NechaevGuess вы сможете путешествовать по миру, не выходя из дома! 
                     Это образовательная онлайн-игра, которая в увлекательной форме даёт знания о мире.
                 </p>
-                {% if current_user.is_authenticated %}
-                    <a href="/playRandomMode" class="play-btn">Играть</a>
-                {% else %}
-                    <a href="/register" class="play-btn">Начать Игру</a>
-                {% endif %}
+                <a href="/play" class="play-btn">Начать Игру</a>
             </div>
         </div>
     </section>
@@ -22,7 +18,7 @@
     <!-- Features Section -->
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Почему стоит выбрать testName?</h2>
+            <h2 class="section-title">Почему стоит выбрать NechaevGuess?</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
